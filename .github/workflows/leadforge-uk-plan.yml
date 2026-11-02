@@ -1,0 +1,40 @@
+name: LeadForge UK pilot (plan only)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: leadforge-uk-plan
+  cancel-in-progress: false
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out this public configuration
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install upstream LeadForge
+        run: |
+          git clone --depth 1 --branch master https://github.com/AbdulrahmanAmer/leadforge.git /tmp/leadforge
+          python -m pip install --upgrade pip
+          python -m pip install -e /tmp/leadforge
+
+      - name: Validate and display the discovery plan only
+        run: |
+          leadforge plan --icp config/uk-vendor-bakeoff-icp.yaml
+
+      - name: Confirm safety boundary
+        run: |
+          echo "Plan-only run completed."
+          echo "No prospect collection, lead export, CRM write, or email sending was performed."
